@@ -12,6 +12,6 @@
 	"require":
 	{
 		"silverstripe/framework": "3.*",
-		"ruflin/elastica": "v1.4.2.0"
+		"ruflin/elastica": "v1.3.4.0"
 	}
 }
