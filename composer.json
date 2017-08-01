@@ -1,11 +1,16 @@
 {
     "name": "mattclegg/silverstripe-elasticsearch",
     "description": "Simple Silverstripe Module to interact with Elastic search.",
+	"type": "silverstripe-module",
+	"keywords": ["silverstripe", "elastic", "search"],	
     "authors": [
         {
             "name": "mattclegg",
             "email": "m@cle.gg"
         }
     ],
-    "require": {}
+	"require":
+	{
+		"silverstripe/framework": "3.*"
+	}
 }
