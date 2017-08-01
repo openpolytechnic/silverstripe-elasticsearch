@@ -1,24 +1,22 @@
 <?php
 
-class ESSiteConfigDecorator extends DataObjectDecorator {
-	public function extraStatics() {
-		return array(
-			'db' => array(
-				'ESIndexName' => 'Varchar(255)',
-				'ESHost' => 'Varchar(150)',
-				'ESPort' => 'Varchar',
-				'ESTransport' => 'Varchar',
-				'ESIndexCustomSettings' => 'Text',
-				'ESSearchResultsLimit' => 'Int(10)'
-			),
-			'defaults' => array(
-				'ESIndexName' => 'ss',
-				'ESSearchResultsLimit' => 10
-			)
-		);
-	}
+class ESSiteConfigDecorator extends DataExtension {
 
-	public function updateCMSFields(&$fields) {
+	private static $db = array(
+		'ESIndexName' => 'Varchar(255)',
+		'ESHost' => 'Varchar(150)',
+		'ESPort' => 'Varchar',
+		'ESTransport' => 'Varchar',
+		'ESIndexCustomSettings' => 'Text',
+		'ESSearchResultsLimit' => 'Int(10)'
+	);
+
+	private static $defaults = array(
+		'ESIndexName' => 'ss',
+		'ESSearchResultsLimit' => 10
+	);
+
+	public function updateCMSFields(FieldList $fields) {
 		$fields->addFieldsToTab('Root.ElasticSearch', array(
 			new TextField('ESIndexName', 'Index Name'),
 			new LiteralField('info', '<p>

@@ -42,9 +42,11 @@ class SSElasticSearch {
 	public function getElasticaClient() {
 		if (!isset($this->eClient)) {
 			try {
-				$this->eClient = new Elastica_Client();
+				$this->eClient = new Elastica_Client(array(
+					'url' => 'https://site:44fc66a2bd7b096bcc653d140b44b2b6@ori-eu-west-1.searchly.com/'
+				));
 				$siteConfig = SiteConfig::current_site_config();
-				$host = $siteConfig->ESHost;
+				/*$host = $siteConfig->ESHost;
 				$port = $siteConfig->ESPort;
 				$transport = $siteConfig->ESTransport;
 
@@ -57,9 +59,12 @@ class SSElasticSearch {
 				if ($transport) {
 					$this->eClient->setConfigValue('transport', $transport);
 				}
+				*/
 			} catch (Elastica_Exception_Client $e) {
+				Debug::dump($e);
 				return Debug::log($e->getMessage());
 			} catch (Exception $e) {
+				Debug::dump($e);
 				return Debug::log($e->getMessage());
 			}
 		}

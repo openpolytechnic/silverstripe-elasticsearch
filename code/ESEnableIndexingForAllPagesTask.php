@@ -6,19 +6,26 @@ class ESEnableIndexingForAllPagesTask extends BuildTask {
 	protected $description = "Checks the 'index this page' checkbox for all pages. Does NOT index on its own.";
 
 	function run($request) {
-		if (!Permission::check('ADMIN')) {
+		if (!Director::is_cli() && !Permission::check('ADMIN')) {
 			echo 'You need to be admin for this.';
 			return;
 		}
-		$allPages = DataObject::get('SiteTree', 'ESIndexThis = 0');
+		$allPages = DataObject::get('SiteTree', '"ESIndexThis" = 0 AND "ShowInSearch" = 1');
 		if ($allPages) {
 			foreach ($allPages as $page) {
+				if ($page->ObsoleteClassName != NULL && !class_exists($page->ObsoleteClassName)) {
+					continue;
+				}
 				$page->ESIndexThis = 1;
 				$page->writeToStage('Stage');
 				if ($page->isPublished()) {
 					$page->publish('Stage', 'Live');
 				}
-				echo "Page id" . $page->ID . " title " . $page->Title . " indexing enabled <br>";
+				if (Director::is_cli()) {
+					echo "Page id" . $page->ID . " title " . $page->Title . " indexing enabled \n";
+				} else {
+					echo "Page id" . $page->ID . " title " . $page->Title . " indexing enabled <br>";
+				}
 			}
 		}
 		else{

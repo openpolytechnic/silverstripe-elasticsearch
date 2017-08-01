@@ -1,7 +1,16 @@
 <?php
 
-class ESSiteTreeDecorator extends SiteTreeDecorator {
+class ESSiteTreeDecorator extends DataExtension {
 
+	private static $db = array(
+		'ESIndexThis' => 'Boolean'
+	);
+
+	private static $defaults = array(
+		'ESIndexThis' => 1
+	);
+
+	/*
 	public function extraStatics() {
 		return array(
 			'db' => array(
@@ -12,8 +21,9 @@ class ESSiteTreeDecorator extends SiteTreeDecorator {
 			)
 		);
 	}
+	*/
 
-	public function updateCMSFields(&$fields) {
+	public function updateCMSFields(FieldList $fields) {
 		$fields->addFieldsToTab('Root.ElasticSearch', array(
 			new CheckboxField('ESIndexThis', 'Index this page in elastic search? (on publish)')
 		));
