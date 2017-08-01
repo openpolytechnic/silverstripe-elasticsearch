@@ -1,0 +1,11 @@
+{
+    "name": "mattclegg/silverstripe-elasticsearch",
+    "description": "Simple Silverstripe Module to interact with Elastic search.",
+    "authors": [
+        {
+            "name": "mattclegg",
+            "email": "m@cle.gg"
+        }
+    ],
+    "require": {}
+}
