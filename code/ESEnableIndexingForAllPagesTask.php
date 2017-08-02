@@ -11,9 +11,13 @@ class ESEnableIndexingForAllPagesTask extends BuildTask {
 			return;
 		}
 		$allPages = DataObject::get('SiteTree', '"ESIndexThis" = 0 AND "ShowInSearch" = 1');
+		$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
 		if ($allPages) {
 			foreach ($allPages as $page) {
 				if ($page->ObsoleteClassName != NULL && !class_exists($page->ObsoleteClassName)) {
+					continue;
+				}
+				if(in_array($page->ClassName, $DataObjectProperites)) {
 					continue;
 				}
 				$page->ESIndexThis = 1;

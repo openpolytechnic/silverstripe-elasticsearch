@@ -24,13 +24,24 @@ class ESSiteTreeDecorator extends DataExtension {
 	*/
 
 	public function updateCMSFields(FieldList $fields) {
-		$fields->addFieldsToTab('Root.ElasticSearch', array(
-			new CheckboxField('ESIndexThis', 'Index this page in elastic search? (on publish)')
-		));
+		$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
+		if(!in_array($this->ClassName, $DataObjectProperites)) {
+			$fields->addFieldsToTab('Root.ElasticSearch', array(
+				new CheckboxField('ESIndexThis', 'Index this page in elastic search? (on publish)')
+			));
+		}
+		else {
+			$fields->addFieldsToTab('Root.Main', array(
+				new HiddenField('ESIndexThis', 'ESIndexThis', 0)
+			));
+		}
 	}
 
 	function onAfterPublish(&$original) {
-		if ($this->owner->ESIndexThis) {
+		$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
+		if (!in_array($this->ClassName, $DataObjectProperites)
+			&& $this->owner->ESIndexThis
+			&& $this->canView()) {
 			$pageType = new ESPageType();
 			$pageType->prepareData($this->owner);
 			$pageType->indexData();

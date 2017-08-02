@@ -8,7 +8,7 @@ class SSElasticSearch {
 
 	protected $eClient;
 	protected $eIndex;
-	/* @var $_eIndex Elastica_Index */
+	/* @var $_eIndex Elastica\Index */
 	protected $_defaultAnalysis = array(
 		"analyzer" => array(
 			"edgengram" => array(
@@ -42,8 +42,8 @@ class SSElasticSearch {
 	public function getElasticaClient() {
 		if (!isset($this->eClient)) {
 			try {
-				$this->eClient = new Elastica_Client(array(
-					'url' => 'https://site:44fc66a2bd7b096bcc653d140b44b2b6@ori-eu-west-1.searchly.com/'
+				$this->eClient = new \Elastica\Client(array(
+					'url' => 'https://site:4e378942e7c623be4656c18aec721ee0@ori-eu-west-1.searchly.com/'
 				));
 				$siteConfig = SiteConfig::current_site_config();
 				/*$host = $siteConfig->ESHost;
@@ -60,7 +60,7 @@ class SSElasticSearch {
 					$this->eClient->setConfigValue('transport', $transport);
 				}
 				*/
-			} catch (Elastica_Exception_Client $e) {
+			} catch (\Elastica\Exception\ClientException $e) {
 				Debug::dump($e);
 				return Debug::log($e->getMessage());
 			} catch (Exception $e) {
@@ -84,7 +84,7 @@ class SSElasticSearch {
 			if (!$this->eIndex->exists()) {
 				$this->eIndex->create($this->getIndexSettings());
 			}
-		} catch (Elastica_Exception_Client $e) {
+		} catch (\Elastica\Exception\ClientException $e) {
 			Debug::log($e->getMessage());
 		} catch (Exception $e) {
 			Debug::log($e->getMessage());
@@ -107,9 +107,9 @@ class SSElasticSearch {
 		$response = '';
 		try {
 			$response = $index->refresh();
-		} catch (Elastica_Exception_Client $e) {
+		} catch (\Elastica\Exception\ClientException $e) {
 			return Debug::log($e->getMessage());
-			//throw new Elastica_Exception_Client($e->getError());
+			//throw new \Elastica\Exception\ClientException($e->getError());
 		} catch (Exception $e) {
 			return Debug::log($e->getMessage());
 		}
@@ -119,15 +119,15 @@ class SSElasticSearch {
 	/**
 	 * Deletes current index
 	 * 
-	 * @return Elastica_Response
-	 * @throws Elastica_Exception_Client
+	 * @return Elastica\Response
+	 * @throws \Elastica\Exception\ClientException
 	 * @throws Mage_Core_Exception
 	 */
 	public function deleteIndex() {
 		try {
 			$index = $this->getElasticaIndex();
 			$response = $index->delete();
-		} catch (Elastica_Exception_Client $e) {
+		} catch (\Elastica\Exception\ClientException $e) {
 			$message = $e->getMessage();
 			Debug::log($message);
 			return user_error($message, E_USER_ERROR);
@@ -161,16 +161,16 @@ class SSElasticSearch {
 	 * Get type in current index by name
 	 * 
 	 * @param string $name
-	 * @return Elastica_Type
+	 * @return Elastica\Type
 	 */
 	public function getIndexType($name) {
 		$index = $this->getElasticaIndex();
 		$type = false;
 		try {
 			$type = $index->getType((string) $name);
-		} catch (Elastica_Exception_Client $e) {
+		} catch (\Elastica\Exception\ClientException $e) {
 			Debug::log($e->getMessage());
-			//throw new Elastica_Exception_Client($e->getError());
+			//throw new \Elastica\Exception\ClientException($e->getError());
 		} catch (Exception $e) {
 			Debug::log($e->getMessage());
 		}
@@ -183,11 +183,11 @@ class SSElasticSearch {
 	 * @param mixed $query
 	 * @param int  $from OPTIONAL
 	 * @param int   $limit OPTIONAL
-	 * @return Elastica_ResultSet
+	 * @return Elastica\ResultSet
 	 */
 	public function search($query, $from = null, $limit = null) {
 
-		$eQuery = new Elastica_Query();
+		$eQuery = new \Elastica\Query();
 		$queryObject = $eQuery->create($query);
 		$siteConfig = SiteConfig::current_site_config();
 
@@ -204,8 +204,8 @@ class SSElasticSearch {
 		try {
 			$index = $this->getElasticaIndex()->getName();
 			$path = $index . '/_search';
-			$response = $this->getElasticaClient()->request($path, Elastica_Request::GET, $queryObject->toArray());
-			$rset = new Elastica_ResultSet($response);
+			$response = $this->getElasticaClient()->request($path, Elastica\Request::GET, $queryObject->toArray());
+			$rset = new \Elastica\ResultSet($response);
 			return $rset;
 			//  return $this->processResultSet($rset);
 		} catch (Exception $e) {

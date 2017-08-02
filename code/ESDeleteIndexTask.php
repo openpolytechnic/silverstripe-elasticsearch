@@ -6,7 +6,7 @@ class ESDeleteIndexTask extends BuildTask {
 	protected $description = 'Deletes the current index set in site config';
 	
 	function run($request){
-		if(!Permission::check('ADMIN')){
+		if(!Director::is_cli() && !Permission::check('ADMIN')){
 			echo 'You need to be admin for this.';
 			return;
 		}
@@ -14,7 +14,11 @@ class ESDeleteIndexTask extends BuildTask {
 		if($siteConfig->ESIndexName){
 			$client = new SSElasticSearch();
 			$client->deleteIndex();
-			echo "index ".$siteConfig->ESIndexName." deleted.";
+			if (Director::is_cli()) {
+				echo "index " . $siteConfig->ESIndexName . " deleted.\n";
+			} else {
+				echo "index " . $siteConfig->ESIndexName . " deleted.";
+			}
 		}
 	}
 }

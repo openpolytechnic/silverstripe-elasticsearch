@@ -11,14 +11,17 @@ class ESUpdateAllPagesIndexTask extends BuildTask {
 			return;
 		}
 		echo "Starting Re-Index.\n";
-		$allPages = SiteTree::get();
+		$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
+		$allPages = SiteTree::get("SiteTree", '"ClassName" NOT IN (\'' . implode("','", $DataObjectProperites) . '\')');
+		//$allPages = SiteTree::get("SiteTree", '"ClassName" = \'Programme\'');
 		echo "Number of page to index :: ".$allPages->count().".\n";
-		foreach ($allPages as $page) {
-			Debug::dump("Indexing the page :: ".$page->Title."(".$page->ESIndexThis.")");
-			if ($page->ESIndexThis && $page->isPublished()) {
+		foreach ($allPages as $index => $page) {
+			Debug::dump("$index) Indexing the page :: ".$page->Title);
+			if (!in_array($page->ClassName, $DataObjectProperites) && $page->ESIndexThis
+				&& $page->isPublished()
+				&& $page->canView()) {
 				$pageType = new ESPageType();
 				$pageType->prepareData($page);
-				Debug::dump($pageType);
 				$pageType->indexData();
 				if(Director::is_cli()){
 					echo "Page id" . $page->ID . " title " . $page->Title . " (re)added to index.\n";

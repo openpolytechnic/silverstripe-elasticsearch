@@ -1,0 +1,148 @@
+---
+Name: silverstripe-elasticsearch
+---
+ESSearchSetting:
+  ExcludeDataObject:
+    - MyPreviousStudy
+    - ApprovedHandlerRegistrationPage
+    - SSOLogin
+    - LandingPage
+    - MobileMyMessagesPage
+    - EnrollmentOfferPaymentPage
+    - PPContractEmailPage
+    - PPApprovalPage
+    - PPContractPage
+    - MyStudyPlans
+    - LibraryAccountPage
+    - PPPartnerPage
+    - CustomSubcategoryPage
+    - BlogEntry
+    - FaqItemPage
+    - StudentAccountPage
+    - SSOChange
+    - SSOLibrary
+    - UserDefinedForm
+    - QualificationPlannerPage
+    - CampaignLandingPageOneColumn
+    - MobileSSOForgotten
+    - MobileMyTrackingPage
+    - RequestAssessmentExtension
+    - MyPersonalDetails
+    - MobileSSOLogin
+    - StudentFullDetails
+    - SSOForgotten
+    - ContactPage
+    - StudentProfileLandingPage
+    - CustomCoursePage
+    - MyPersonalDetailsEdit
+    - RedirectorPage
+    - PPStudentApplicationPage
+    - BlogHolder
+    - SiteMap
+    - OPSessionManagerPage
+    - ApprovedHandlerLandingPage
+    - EmailRequest
+    - StaffHolderPage
+    - EnrolmentCampaignLogin
+    - EnrolmentFormLoginPage
+    - PPStudentPage
+    - Page
+    - MyMessagesPage
+    - MobilePage
+    - PPStudentPortalLandingPage
+    - EmailableUserDefinedForm
+    - HomePage
+    - StudentProfileArea
+    - StaffMemberPage
+    - EnrollmentFormPage
+    - FaqTopicPage
+    - MobileStudentDashboard
+    - EnrollmentPlanPage
+    - PPPartnerSettingsPage
+    - FaqHolderPage
+    - LaunchPadPage
+    - WebchatPage
+    - FaqHolder
+    - ErrorPage
+    - FinalResultsPage
+    - CampaignLandingPageResponsive
+    - StudentProfilePage
+    - UnofficialRecordOfStudy
+    - ApprovedHandlerPaymentPage
+    - DocumentOrderPage
+    - MyTrackingPage
+    - MobileRequestAssessmentExtension
+    - MobileContactPage
+    - MyPreviousStudyEdit
+    - MyDetailsConfirmingPage
+    - FinalResultNotification
+    - PPUploadEnrolmentsPage
+    - AcademicRecordPage
+    - ApprovedHandlerAssessmentFailed
+    - EnrolmentCampaignPage
+    - MyOpenPolytechnicFAQ
+    - SubjectPage
+    - PPQualificationLandingPage
+    - MyContactDetails
+    - MyContactDetailsEdit
+
+ESSearchProperties:
+  Default:
+    MetaDescription:
+      type: string
+  DataObject:
+    Programme:
+      AcademicLevel:
+        type: integer
+      Code:
+        type: string
+      Credits:
+        type: string
+      EFTS:
+        type: string
+#      ExternalCode:
+#        type: string
+#      GUID:
+#        type: string
+#      ProgrammeIntroduction:
+#        type: string
+#      CombinedTitle:
+#        type: string
+#      AboutContent:
+#        type: string
+    Course:
+      AcademicLevel:
+        type: integer
+      Code:
+        type: string
+      CourseWeeks:
+        type: integer
+      Credits:
+        type: string
+      EFTS:
+        type: string
+#      ExternalCode:
+#        type: string
+#      GUID:
+#        type: string
+#      CourseIntroduction:
+#        type: string
+#      WhatsInTheCourse:
+#        type: string
+#      CombinedTitle:
+#        type: string
+
+ESSearchMapping:
+  DataObject:
+    Programme:
+      Title:
+        - CombinedTitle
+      Content:
+        - ProgrammeIntroduction
+        - AboutContent
+    Course:
+      Title:
+        - CombinedTitle
+      Content:
+        - CourseIntroduction
+        - WhatsInTheCourse

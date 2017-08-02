@@ -2,17 +2,18 @@
 
 abstract class ESAbstractType {
 
+	static protected $_ID_FIELD = 'id';
 	// Array of items and data to be indexed / updated
 	protected $_feedArray = array();
 	// Type used in elasticsearch
 	protected $_type = NULL;
-	/* @var $_eClient Elastica_Client */
+	/* @var $_eClient Elastica\Client */
 	protected $_eClient;
-	/* @var $_eIndex Elastica_Index */
+	/* @var $_eIndex Elastica\Index */
 	protected $_eIndex;
-	/* @var $_eType Elastica_Type */
+	/* @var $_eType Elastica\Type */
 	protected $_eType;
-	/* @var $_eMap Elastica_Type_Mapping */
+	/* @var $_eMap Elastica\Type\Mapping */
 	protected $_eMapping;
 
 	function __construct() {
@@ -27,11 +28,11 @@ abstract class ESAbstractType {
 
 			$this->_eType = $this->_eIndex->getType($this->_type);
 			if (!$this->indexTypeExists()) {
-				$this->_eMap = new Elastica_Type_Mapping($this->getType());
+				$this->_eMap = new \Elastica\Type\Mapping($this->getType());
 				$this->_eMap->setProperties($this->getMappingProps());
 				$this->_eMap->send();
 			}
-		} catch (Elastica_Exception_Client $e) {
+		} catch (\Elastica\Exception\ClientException $e) {
 			Debug::log($e->getMessage());
 		} catch (Exception $e) {
 			Debug::log($e->getMessage());
@@ -46,7 +47,7 @@ abstract class ESAbstractType {
 	public function indexTypeExists() {
 		$exists = false;
 		$map = $this->_eIndex->getMapping();
-		if (array_key_exists($this->_type, $map[$this->getIndexName()])) {
+		if (array_key_exists($this->_type, $map)) {
 			$exists = true;
 		}
 		return $exists;
@@ -54,7 +55,7 @@ abstract class ESAbstractType {
 
 	/**
 	 *
-	 * @return Elastica_Client 
+	 * @return Elastica\Client
 	 */
 	public function getClient() {
 		return $this->_eClient;
@@ -62,7 +63,7 @@ abstract class ESAbstractType {
 
 	/**
 	 *
-	 * @return Elastica_Index 
+	 * @return Elastica\Index
 	 */
 	public function getIndex() {
 		return $this->_eIndex;
@@ -70,7 +71,7 @@ abstract class ESAbstractType {
 
 	/**
 	 *
-	 * @return Elastica_Type 
+	 * @return Elastica\Type
 	 */
 	public function getType() {
 		return $this->_eType;
@@ -78,13 +79,13 @@ abstract class ESAbstractType {
 
 	/**
 	 *
-	 * @return Elastica_Type_Mapping 
+	 * @return Elastica\Type\Mapping
 	 */
 	public function getMapping() {
 		if (!isset($this->_eMapping)) {
 			try {
-				$this->_eMapping = new Elastica_Type_Mapping($this->getType());
-			} catch (Elastica_Exception_Client $e) {
+				$this->_eMapping = new \Elastica\Type\Mapping($this->getType());
+			} catch (\Elastica\Exception\ClientException $e) {
 				return Debug::log($e->getMessage());
 			} catch (Exception $e) {
 				return Debug::log($e->getMessage());
@@ -102,8 +103,13 @@ abstract class ESAbstractType {
 	}
 
 	public function deleteByID($id) {
-		$this->_eType->deleteByID((int) $id);
-		$this->_eClient->refreshIndex();
+		try {
+			$this->_eType->deleteByID((int)$id);
+			$this->_eClient->refreshIndex();
+		}
+		catch(\Elastica\Exception\NotFoundException $e) {
+			//Ingnore if the ID do not exist
+		}
 	}
 
 	/**
