@@ -3,36 +3,28 @@
 class ESSiteTreeDecorator extends DataExtension {
 
 	private static $db = array(
-		'ESIndexThis' => 'Boolean'
+		'ESIndexThis' => 'Boolean',
+		'ESScoreBoost' => 'Int'
 	);
 
 	private static $defaults = array(
-		'ESIndexThis' => 1
+		'ESIndexThis' => 1,
+		'ESScoreBoost' => 1
 	);
-
-	/*
-	public function extraStatics() {
-		return array(
-			'db' => array(
-				'ESIndexThis' => 'Boolean'
-			),
-			'defaults' => array(
-				'ESIndexThis' => 1
-			)
-		);
-	}
-	*/
 
 	public function updateCMSFields(FieldList $fields) {
 		$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
 		if(!in_array($this->ClassName, $DataObjectProperites)) {
-			$fields->addFieldsToTab('Root.ElasticSearch', array(
-				new CheckboxField('ESIndexThis', 'Index this page in elastic search? (on publish)')
+			$fields->addFieldsToTab('Root.Main', array(
+				new CheckboxField('ESIndexThis', 'Show this page in site(elastic) search? (on publish)'),
+				new NumericField('ESScoreBoost', 'Boost this page in search')
 			));
+
 		}
 		else {
 			$fields->addFieldsToTab('Root.Main', array(
-				new HiddenField('ESIndexThis', 'ESIndexThis', 0)
+				new HiddenField('ESIndexThis', 'ESIndexThis', 0),
+				new HiddenField('ESScoreBoost', 'ESScoreBoost', 0)
 			));
 		}
 	}

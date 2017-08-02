@@ -10,11 +10,15 @@ class ESResultsController extends Page_Controller {
 		return $this->renderWith(array('ESPage_results', 'Page'));
 	}
 
-	protected function _fetchResults($from = 0) {
+	protected function _fetchResults() {
 		$results = NULL;
 		if (isset($_GET['q'])) {
 			$client = new SSElasticSearch();
 			$query = trim((string) $_GET['q']);
+			$from = 0;
+			if(isset($_GET['start'])){
+				$from = (int) $_GET['start'];
+			}
 			$results = $client->search($query, $from);
 		}
 		return $results;
@@ -24,24 +28,25 @@ class ESResultsController extends Page_Controller {
 		$results = $this->_fetchResults();
 		if ($results) {
 			if ($results->count() > 0) {
-				$set = new DataObjectSet();
-				$resultSet = new DataObjectSet();
+				$resultSet = new ArrayList();
 				foreach ($results->getResults() as $result) {
 					$content = new HTMLText();
-					$content->setValue($result->content);
-					$data = array(
-						'Title' => $result->title,
-						'MenuTitle' => $result->title,
-						'Content' => $content,
-						'Link' => $result->url,
-					);
+					$content->setValue($result->Content);
+					$result->Content = $content;
+					$data = $result->getData();
+					if($Highlights = $result->getHighlights()) {
+						foreach ($Highlights as $key => $texts){
+							$text = new HTMLText();
+							$text->setValue(implode("\n", $texts));
+							$data[$key] = $text;
+						}
+					}
 					$resultSet->push(new ArrayData(($data)));
 				}
-				$set->push(new ArrayData(array(
-							'TotalHits' => $results->getTotalHits(),
-							'Results' => $resultSet
-						)));
-				return $set;
+				return new ArrayData(array(
+					'TotalHits' => $results->getTotalHits(),
+					'Results' => $resultSet
+				));
 			}
 		}
 	}

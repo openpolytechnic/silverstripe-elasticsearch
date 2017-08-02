@@ -6,7 +6,6 @@ ESSearchSetting:
     - MyPreviousStudy
     - ApprovedHandlerRegistrationPage
     - SSOLogin
-    - LandingPage
     - MobileMyMessagesPage
     - EnrollmentOfferPaymentPage
     - PPContractEmailPage
@@ -15,9 +14,6 @@ ESSearchSetting:
     - MyStudyPlans
     - LibraryAccountPage
     - PPPartnerPage
-    - CustomSubcategoryPage
-    - BlogEntry
-    - FaqItemPage
     - StudentAccountPage
     - SSOChange
     - SSOLibrary
@@ -31,45 +27,29 @@ ESSearchSetting:
     - MobileSSOLogin
     - StudentFullDetails
     - SSOForgotten
-    - ContactPage
-    - StudentProfileLandingPage
-    - CustomCoursePage
     - MyPersonalDetailsEdit
     - RedirectorPage
     - PPStudentApplicationPage
-    - BlogHolder
     - SiteMap
     - OPSessionManagerPage
     - ApprovedHandlerLandingPage
     - EmailRequest
-    - StaffHolderPage
     - EnrolmentCampaignLogin
     - EnrolmentFormLoginPage
     - PPStudentPage
-    - Page
     - MyMessagesPage
     - MobilePage
     - PPStudentPortalLandingPage
     - EmailableUserDefinedForm
-    - HomePage
-    - StudentProfileArea
-    - StaffMemberPage
     - EnrollmentFormPage
-    - FaqTopicPage
     - MobileStudentDashboard
     - EnrollmentPlanPage
     - PPPartnerSettingsPage
-    - FaqHolderPage
     - LaunchPadPage
-    - WebchatPage
-    - FaqHolder
     - ErrorPage
     - FinalResultsPage
-    - CampaignLandingPageResponsive
-    - StudentProfilePage
     - UnofficialRecordOfStudy
     - ApprovedHandlerPaymentPage
-    - DocumentOrderPage
     - MyTrackingPage
     - MobileRequestAssessmentExtension
     - MobileContactPage
@@ -77,11 +57,8 @@ ESSearchSetting:
     - MyDetailsConfirmingPage
     - FinalResultNotification
     - PPUploadEnrolmentsPage
-    - AcademicRecordPage
     - ApprovedHandlerAssessmentFailed
     - EnrolmentCampaignPage
-    - MyOpenPolytechnicFAQ
-    - SubjectPage
     - PPQualificationLandingPage
     - MyContactDetails
     - MyContactDetailsEdit
@@ -100,16 +77,6 @@ ESSearchProperties:
         type: string
       EFTS:
         type: string
-#      ExternalCode:
-#        type: string
-#      GUID:
-#        type: string
-#      ProgrammeIntroduction:
-#        type: string
-#      CombinedTitle:
-#        type: string
-#      AboutContent:
-#        type: string
     Course:
       AcademicLevel:
         type: integer
@@ -121,16 +88,6 @@ ESSearchProperties:
         type: string
       EFTS:
         type: string
-#      ExternalCode:
-#        type: string
-#      GUID:
-#        type: string
-#      CourseIntroduction:
-#        type: string
-#      WhatsInTheCourse:
-#        type: string
-#      CombinedTitle:
-#        type: string
 
 ESSearchMapping:
   DataObject:
@@ -146,3 +103,14 @@ ESSearchMapping:
       Content:
         - CourseIntroduction
         - WhatsInTheCourse
+    SubjectPage:
+      Content:
+        - Intro
+        - Overview
+
+ESSearchHighlight:
+  StartTag: <strong>
+  EndTag: </strong>
+  Fields:
+    - Content
+    - Title

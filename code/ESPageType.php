@@ -25,9 +25,9 @@ class ESPageType extends ESAbstractType {
 			'type' => 'string'
 		);
 		$props['Content'] = array(
-			'type' => 'string'
+			'type' => 'text'
 		);
-		$props['URL'] = array(
+		$props['Link'] = array(
 			'type' => 'string',
 			'index' => 'not_analyzed'
 		);
@@ -39,6 +39,10 @@ class ESPageType extends ESAbstractType {
 		$props['LastEdited'] = array(
 			'type' => 'date',
 			'format' => 'YYYY-MM-dd HH:mm:ss',
+			'index' => 'not_analyzed'
+		);
+		$props['ScoreBoost'] = array(
+			'type' => 'integer',
 			'index' => 'not_analyzed'
 		);
 		$ExtraProperites = Config::inst()->get('ESSearchProperties', 'Default');
@@ -64,11 +68,15 @@ class ESPageType extends ESAbstractType {
 		$data['Created'] = $page->Created;
 		$data['Title'] = $page->Title;
 		$data['MenuTitle'] = $page->MenuTitle ? $page->MenuTitle : $page->Title;
-		$data['URL'] = $page->Link();
+		$data['Link'] = $page->Link();
+		$data['ScoreBoost'] = $page->ESScoreBoost;
+		if($data['ScoreBoost'] == 0){
+			$data['ScoreBoost'] = 1;
+		}
 		$data['Content'] = self::cleanString($page->Content);
 		$ExtraProperites = Config::inst()->get('ESSearchProperties', 'Default');
 		foreach ($ExtraProperites as $field => $def){
-			if(!isset($def['type']) || $def['type'] == 'string') {
+			if(!isset($def['type']) || $def['type'] == 'string' || $def['type'] == 'text') {
 				$data[$field] = self::convertToString(self::getValue($page, $field));
 			}
 			else {
@@ -78,7 +86,7 @@ class ESPageType extends ESAbstractType {
 		$DataObjectProperites = Config::inst()->get('ESSearchProperties', 'DataObject');
 		if(isset($DataObjectProperites[$page->ClassName])) {
 			foreach ($DataObjectProperites[$page->ClassName] as $field => $def) {
-				if (!isset($def['type']) || $def['type'] == 'string') {
+				if (!isset($def['type']) || $def['type'] == 'string' || $def['type'] == 'text' ) {
 					$data[$page->ClassName . '_' . $field] = self::convertToString(self::getValue($page, $field));
 				} else {
 					$data[$page->ClassName . '_' . $field] = self::getValue($page, $field);
@@ -110,14 +118,14 @@ class ESPageType extends ESAbstractType {
 				}
 
 				foreach ($mappings as $mfield) {
-					if($type == 'string') {
+					if($type == 'string' || $type == 'text') {
 						$content[] = self::convertToString(self::getValue($page, $mfield));
 					}
 					else {
 						$content[] = self::getValue($page, $mfield);
 					}
 				}
-				if($type == 'string') {
+				if($type == 'string' || $type == 'text') {
 					$data[$key] = implode(' ', $content);
 				}
 				else {
@@ -171,7 +179,7 @@ class ESPageType extends ESAbstractType {
 		return self::cleanString(serialize($object));
 	}
 
-	private static function cleanString($Content) {
+	public static function cleanString($Content) {
 		return trim(preg_replace('/\s+/', ' ', strip_tags($Content)));
 	}
 

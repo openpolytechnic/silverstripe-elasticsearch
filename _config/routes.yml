@@ -1,0 +1,8 @@
+---
+Name: silverstripe-elasticsearch
+After: 'framework/*','cms/*'
+---
+Director:
+  rules:
+    'site/search': 'ESSearchController'
+

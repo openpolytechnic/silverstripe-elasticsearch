@@ -42,29 +42,33 @@ class SSElasticSearch {
 	public function getElasticaClient() {
 		if (!isset($this->eClient)) {
 			try {
-				$this->eClient = new \Elastica\Client(array(
-					'url' => 'https://site:4e378942e7c623be4656c18aec721ee0@ori-eu-west-1.searchly.com/'
-				));
 				$siteConfig = SiteConfig::current_site_config();
-				/*$host = $siteConfig->ESHost;
-				$port = $siteConfig->ESPort;
-				$transport = $siteConfig->ESTransport;
+				$params = array();
+				if(isset($siteConfig->ESAPIEndPoint) && trim($siteConfig->ESAPIEndPoint) != '') {
+					$params['url'] = $siteConfig->ESAPIEndPoint;
+				}
+				else {
+					$host = $siteConfig->ESHost;
+					$port = $siteConfig->ESPort;
+					$transport = $siteConfig->ESTransport;
 
-				if ($host) {
-					$this->eClient->setConfigValue('host', $host);
+					if ($host) {
+						$params['host'] = $host;
+					}
+					if ($port) {
+						$params['port'] = $port;
+					}
+					if ($transport) {
+						$params['transport'] = $transport;
+					}
 				}
-				if ($port) {
-					$this->eClient->setConfigValue('port', $port);
-				}
-				if ($transport) {
-					$this->eClient->setConfigValue('transport', $transport);
-				}
-				*/
+				$this->eClient = new \Elastica\Client(array(
+					'url' => $siteConfig->ESAPIEndPoint
+				));
+
 			} catch (\Elastica\Exception\ClientException $e) {
-				Debug::dump($e);
 				return Debug::log($e->getMessage());
 			} catch (Exception $e) {
-				Debug::dump($e);
 				return Debug::log($e->getMessage());
 			}
 		}
@@ -77,6 +81,10 @@ class SSElasticSearch {
 		if (!$indexName) {
 			Debug::log('User error: Index name not set');
 			return user_error('User error: Index name not set', E_USER_ERROR);
+		}
+		$domain = parse_url(@Director::absoluteURL(), PHP_URL_HOST);
+		if($domain){
+			$indexName = str_replace('.', '_', $domain).'_'.$indexName;
 		}
 		$this->eIndex = $this->getElasticaClient()->getIndex($indexName);
 		// Check index exists, else create it and set default settings
@@ -185,29 +193,57 @@ class SSElasticSearch {
 	 * @param int   $limit OPTIONAL
 	 * @return Elastica\ResultSet
 	 */
-	public function search($query, $from = null, $limit = null) {
+	public function search($query, $filters = array(),
+						   $from = null, $limit = null,
+						   $sort = array('_score' => 'desc', 'LastEdited' => 'desc')) {
 
-		$eQuery = new \Elastica\Query();
-		$queryObject = $eQuery->create($query);
+		$eQuery = new \Elastica\Query(new \Elastica\Query\QueryString($query));
+		//$eQuery->addScriptField()
 		$siteConfig = SiteConfig::current_site_config();
 
 		if (is_null($limit)) {
 			$limit = (int) $siteConfig->ESSearchResultsLimit;
 		}
-		$queryObject->setLimit($limit);
+		$eQuery->setLimit($limit);
 		if (!is_null($from)) {
-			$queryObject->setFrom((int) $from);
+			$eQuery->setFrom((int) $from);
 		}
+		//$eQuery->setRawQuery(array("match" => $query));
+		$eQuery->setSort($sort);
+		$eQuery->setHighlight($this->getHighlightSetting());
 
-		$queryObject->setSort(array('_score' => 'desc'));
+		$functionScoreQuery = new \Elastica\Query\FunctionScore();
+		//$ScoreScript = new \Elastica\Script\Script('_score + 1');
+		$functionScoreQuery->setParam('query', $eQuery->getQuery());
+
+		$functionScoreQuery->addFunction('script_score', array(
+			'script' => '_score + doc[\'ScoreBoost\'].value'
+		));
+		/*
+		$functionScoreQuery->addFunction('script_score', array(
+			'script' => '_score - 1'
+		));*/
+		$eQuery->setQuery($functionScoreQuery);
 
 		try {
 			$index = $this->getElasticaIndex()->getName();
 			$path = $index . '/_search';
-			$response = $this->getElasticaClient()->request($path, Elastica\Request::GET, $queryObject->toArray());
-			$rset = new \Elastica\ResultSet($response);
+			Debug::dump($eQuery->toArray());
+			$response = $this->getElasticaClient()->request($path, Elastica\Request::GET, $eQuery->toArray());
+			$rset = new \Elastica\ResultSet($response, $eQuery);
 			return $rset;
 			//  return $this->processResultSet($rset);
+		} catch (Exception $e) {
+			Debug::dump($e->getMessage());
+			return Debug::log($e->getMessage());
+		}
+	}
+
+	public function optimizeIndex() {
+		try {
+			$index = $this->getElasticaIndex()->getName();
+			$path = $index . '/_optimize';
+			$response = $this->getElasticaClient()->request($path, Elastica\Request::POST);
 		} catch (Exception $e) {
 			return Debug::log($e->getMessage());
 		}
@@ -242,6 +278,7 @@ class SSElasticSearch {
 	 * "newSettings" would be added including any subsettings
 	 * 
 	 */
+	/*
 	protected function _processCustomSettings() {
 
 		$siteConfig = SiteConfig::current_site_config();
@@ -275,6 +312,7 @@ class SSElasticSearch {
 			}
 		}
 	}
+	*/
 
 	/**
 	 * Takes a string and determines if it is prefixed with a '-'
@@ -307,4 +345,38 @@ class SSElasticSearch {
 		return FALSE;
 	}
 
+	protected function getHighlightSetting() {
+		$highlightSetting = array("require_field_match" => false);
+		if($fields = Config::inst()->get('ESSearchHighlight', 'Fields')) {
+			$highlightSetting["fields"] = array();
+			foreach($fields as $key => $value){
+				if(is_array($value)){
+					$highlightSetting["fields"][$key] = (object)$value;
+				}
+				else {
+					$highlightSetting["fields"][$value] = (object)array();
+				}
+			}
+			if (Config::inst()->get('ESSearchHighlight', 'StartTag')) {
+				$tags = Config::inst()->get('ESSearchHighlight', 'StartTag');
+				if(is_array($tags)) {
+					$highlightSetting["pre_tags"] = $tags;
+				}
+				else {
+					$highlightSetting["pre_tags"] = array($tags);
+				}
+			}
+			if (Config::inst()->get('ESSearchHighlight', 'EndTag')) {
+				$tags = Config::inst()->get('ESSearchHighlight', 'EndTag');
+				if(is_array($tags)) {
+					$highlightSetting["post_tags"] = $tags;
+				}
+				else {
+					$highlightSetting["post_tags"] = array($tags);
+				}
+
+			}
+		}
+		return $highlightSetting;
+	}
 }
