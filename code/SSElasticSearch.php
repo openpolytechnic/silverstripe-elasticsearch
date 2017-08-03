@@ -195,7 +195,7 @@ class SSElasticSearch {
 	 */
 	public function search($query, $filters = array(),
 						   $from = null, $limit = null,
-						   $sort = array('_score' => 'desc', 'LastEdited' => 'desc')) {
+						   $sort = array('_score' => 'desc')) {
 
 		$eQuery = new \Elastica\Query(new \Elastica\Query\QueryString($query));
 		//$eQuery->addScriptField()
@@ -208,33 +208,28 @@ class SSElasticSearch {
 		if (!is_null($from)) {
 			$eQuery->setFrom((int) $from);
 		}
-		//$eQuery->setRawQuery(array("match" => $query));
+
 		$eQuery->setSort($sort);
 		$eQuery->setHighlight($this->getHighlightSetting());
 
+		//Boost score
 		$functionScoreQuery = new \Elastica\Query\FunctionScore();
-		//$ScoreScript = new \Elastica\Script\Script('_score + 1');
 		$functionScoreQuery->setParam('query', $eQuery->getQuery());
-
 		$functionScoreQuery->addFunction('script_score', array(
-			'script' => '_score + doc[\'ScoreBoost\'].value'
+			//'script' => '_score * doc[\'ScoreBoost\'].value * ( doc[\'ClassName\'].value == \'Programme\'? 2 : 1)'
+			'script' => '_score * doc[\'ScoreBoost\'].value'
 		));
-		/*
-		$functionScoreQuery->addFunction('script_score', array(
-			'script' => '_score - 1'
-		));*/
 		$eQuery->setQuery($functionScoreQuery);
 
 		try {
 			$index = $this->getElasticaIndex()->getName();
 			$path = $index . '/_search';
-			Debug::dump($eQuery->toArray());
+			//Debug::dump($eQuery->toArray());
 			$response = $this->getElasticaClient()->request($path, Elastica\Request::GET, $eQuery->toArray());
 			$rset = new \Elastica\ResultSet($response, $eQuery);
 			return $rset;
-			//  return $this->processResultSet($rset);
 		} catch (Exception $e) {
-			Debug::dump($e->getMessage());
+			//Debug::dump($e->getMessage());
 			return Debug::log($e->getMessage());
 		}
 	}

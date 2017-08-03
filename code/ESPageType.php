@@ -16,7 +16,8 @@ class ESPageType extends ESAbstractType {
 			'index' => 'not_analyzed'
 		);
 		$props['ClassName'] = array(
-			'type' => 'string'
+			'type' => 'string',
+			'fielddata' => true
 		);
 		$props['Title'] = array(
 			'type' => 'string'
@@ -42,7 +43,7 @@ class ESPageType extends ESAbstractType {
 			'index' => 'not_analyzed'
 		);
 		$props['ScoreBoost'] = array(
-			'type' => 'integer',
+			'type' => 'float',
 			'index' => 'not_analyzed'
 		);
 		$ExtraProperites = Config::inst()->get('ESSearchProperties', 'Default');
@@ -72,6 +73,9 @@ class ESPageType extends ESAbstractType {
 		$data['ScoreBoost'] = $page->ESScoreBoost;
 		if($data['ScoreBoost'] == 0){
 			$data['ScoreBoost'] = 1;
+		}
+		if(method_exists($page, "updateScoreBoost")){
+			$data['ScoreBoost'] = $page->updateScoreBoost($data['ScoreBoost']);
 		}
 		$data['Content'] = self::cleanString($page->Content);
 		$ExtraProperites = Config::inst()->get('ESSearchProperties', 'Default');

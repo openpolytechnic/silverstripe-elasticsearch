@@ -20,8 +20,8 @@ class ESSearchController extends Page_Controller {
 		}
 		$filters = array();
 		$from = 0;
-		if($this->getRequest()->getVar('Start')) {
-			$from = (int)$this->getRequest()->getVar('Start');
+		if($this->getRequest()->getVar('start')) {
+			$from = (int)$this->getRequest()->getVar('start');
 		}
 		$client = new SSElasticSearch();
 		$resultSet = new ArrayList();
@@ -29,7 +29,7 @@ class ESSearchController extends Page_Controller {
 		if ($results) {
 			if ($results->count() > 0) {
 				foreach ($results->getResults() as $result) {
-					//Debug::dump($result->getScore());
+					Debug::dump($result);
 					$content = new HTMLText();
 					$content->setValue(ESPageType::cleanString($result->Content));
 					$result->Content = $content;
@@ -44,6 +44,7 @@ class ESSearchController extends Page_Controller {
 					if(strlen($data['Content']) > 300) {
 						$data['Content'] = self::truncate($data['Content'], 300);
 					}
+					$data['Score'] = $result->getScore();
 					$resultSet->push(new ArrayData(($data)));
 				}
 			}
@@ -53,8 +54,40 @@ class ESSearchController extends Page_Controller {
 			'Search' => $query,
 			'Offset' => $from,
 			'TotalHits' => $results->getTotalHits(),
-			'Results' => $resultSet
+			'Results' => $resultSet,
+			'ResultStart' => ($from + 1),
+			'ResultEnd' => min($from + 10, $results->getTotalHits()),
+			'Pagination' => $this->getPagination($results)
 		))->renderWith(array('ESSearchPage', 'Page'));
+	}
+
+	public function getPagination($results, $start = 0, $limit = 10) {
+		$total = $results->getTotalHits();
+		$list = new ArrayList(range(0, $total - 1));
+		$pagination = new PaginatedList($list, $this->getRequest());
+		return $pagination;
+	}
+
+	public function SearchForm()
+	{
+		$searchText = "Enter a word or phrase";
+
+		if ($this->owner->request) {
+			$searchText = $this->owner->request->getVar('Search');
+		}
+
+		$fields = new FieldList(
+			new TextField('Search', false, $searchText)
+		);
+
+		$actions = new FieldList(
+			new FormAction('results', _t('SearchForm.GO', 'Go'))
+		);
+
+		$form = new SearchForm($this->owner, 'SearchForm', $fields, $actions);
+		$form->setFormAction('site/search');
+
+		return $form;
 	}
 
 	public static function truncate($text, $length = 100, $ending = '...', $exact = false, $considerHtml = true) {
