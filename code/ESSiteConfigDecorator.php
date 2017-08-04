@@ -8,7 +8,13 @@ class ESSiteConfigDecorator extends DataExtension {
 		'ESHost' => 'Varchar(150)',
 		'ESPort' => 'Varchar',
 		'ESTransport' => 'Varchar',
-		'ESSearchResultsLimit' => 'Int(10)'
+		'ESSearchUseAjax' => 'Boolean',
+		'ESSearchResultsLimit' => 'Int(10)',
+		'ESSearchResultsTitle' => 'Varchar(255)',
+		'ESSearchResultsIntro' => 'HTMLText',
+		'ESSearchResultsNoResults' => 'HTMLText',
+		'ESSearchResultsNotWorking' => 'HTMLText',
+		'ESSearchResultsNoText' => 'HTMLText'
 	);
 
 	private static $defaults = array(
@@ -18,8 +24,16 @@ class ESSiteConfigDecorator extends DataExtension {
 
 	public function updateCMSFields(FieldList $fields) {
 		$fields->addFieldsToTab('Root.ElasticSearch', array(
-			new TextField('ESIndexName', 'Index Name'),
+			new HeaderField("ESSearchResultHeader", "Search Result"),
+			new CheckboxField('ESSearchUseAjax', 'Search To Use Ajax'),
+			new TextField('ESSearchResultsTitle', 'Search Results Title'),
+			$ESSearchResultsIntro = new HtmlEditorField('ESSearchResultsIntro', 'Search Results Introduction'),
+			$ESSearchResultsNoResults = new HtmlEditorField('ESSearchResultsNoResults', 'Search No Results'),
+			$ESSearchResultsNotWorking = new HtmlEditorField('ESSearchResultsNotWorking', 'Search Not Working'),
+			$ESSearchResultsNoText = new HtmlEditorField('ESSearchResultsNoText', 'Search No Text'),
 			new TextField('ESSearchResultsLimit', 'Search results limit per page'),
+			new HeaderField("ESSearchElastic", "Elastic Search Server"),
+			new TextField('ESIndexName', 'Index Name'),
 			new TextField('ESAPIEndPoint', 'API End Point'),
 			new LiteralField('EitherOrHeading', '<hr /><p>If Elastic serach server is run localy fill in the following detials. Only if API end point is not present.</p>'),
 			new TextField('ESHost', 'Host (optional - default: localhost)'),
@@ -35,6 +49,10 @@ class ESSiteConfigDecorator extends DataExtension {
 				</p>')
 
 		));
+		$ESSearchResultsIntro->setRows(10);
+		$ESSearchResultsNoResults->setRows(10);
+		$ESSearchResultsNotWorking->setRows(10);
+		$ESSearchResultsNoText->setRows(10);
 	   
 	}
 

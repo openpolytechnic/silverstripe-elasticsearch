@@ -17,7 +17,7 @@ class ESPageType extends ESAbstractType {
 		);
 		$props['ClassName'] = array(
 			'type' => 'string',
-			'fielddata' => true
+			'index' => 'not_analyzed'
 		);
 		$props['Title'] = array(
 			'type' => 'string'

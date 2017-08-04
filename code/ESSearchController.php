@@ -7,11 +7,23 @@ class ESSearchController extends Page_Controller {
 	}
 
 	function index() {
+
+		//USE AJAX
+		$returnAsJSON = false;
+		if($this->getRequest()->getVar('ajax')) {
+			$this->response->addHeader("Content-type", "application/json");
+			$this->response->addHeader("Cache-Control", "max-age=172800, public");
+			$returnAsJSON = true;
+		}
+		$siteConfig = SiteConfig::current_site_config();
 		if($this->getRequest()->getVar('Search')){
 			$query = trim($this->getRequest()->getVar('Search'));
 		}
 		else {
 			return $this->customise(array(
+				'SiteConfig' => $siteConfig,
+				'ClassName' => 'SearchPage',
+				'Title' => $siteConfig->ESSearchResultsTitle,
 				'Search' => false,
 				'Offset' => 0,
 				'TotalHits' => 0,
@@ -19,46 +31,113 @@ class ESSearchController extends Page_Controller {
 			))->renderWith(array('ESSearchPage', 'Page'));
 		}
 		$filters = array();
+		$sort = array('_score' => 'desc');
 		$from = 0;
+		$limit = 10;
+		if($siteConfig->ESSearchResultsLimit) {
+			$limit = $siteConfig->ESSearchResultsLimit;
+		}
 		if($this->getRequest()->getVar('start')) {
 			$from = (int)$this->getRequest()->getVar('start');
 		}
+		if($this->getRequest()->getVar('limit')) {
+			$limit = (int)$this->getRequest()->getVar('limit');
+		}
+
+		if($this->getRequest()->getVar('filters')) {
+			$filters = $this->getRequest()->getVar('filters');
+		}
+		if($this->getRequest()->getVar('sort')) {
+			$sort = array($this->getRequest()->getVar('sort') => 'desc');
+		}
+		$baseURL = $this->getBaseURL($query);
+
+		if(!$returnAsJSON && $siteConfig->ESSearchUseAjax){
+			return $this->customise(array(
+				'SiteConfig' => $siteConfig,
+				'ClassName' => 'SearchPage',
+				'Title' => $siteConfig->ESSearchResultsTitle,
+				'SearchURL' => $this->getBaseURL(''),
+				'UseAjax' => true,
+				'Search' => $query,
+				'Offset' => $from,
+				'Filters' => $filters,
+				'Sort' => $sort
+			))->renderWith(array('ESSearchPage', 'Page'));
+		}
+
 		$client = new SSElasticSearch();
-		$resultSet = new ArrayList();
-		$results = $client->search($query, $filters, $from);
+		$resultSet = array();
+		$results = $client->search($query, $filters, $from, $limit, $sort);
 		if ($results) {
 			if ($results->count() > 0) {
 				foreach ($results->getResults() as $result) {
-					Debug::dump($result);
 					$content = new HTMLText();
 					$content->setValue(ESPageType::cleanString($result->Content));
 					$result->Content = $content;
 					$data = $result->getData();
 					if($Highlights = $result->getHighlights()) {
 						foreach ($Highlights as $key => $texts){
-							$text = new HTMLText();
-							$text->setValue(implode("\n", $texts));
-							$data[$key] = $text;
+							if($returnAsJSON){
+								$text = implode("\n", $texts);
+							}
+							else {
+								$text = new HTMLText();
+								$text->setValue(implode("\n", $texts));
+							}
+							if($text && trim($text) != '') {
+								$data[$key] = $text;
+							}
 						}
 					}
 					if(strlen($data['Content']) > 300) {
 						$data['Content'] = self::truncate($data['Content'], 300);
 					}
 					$data['Score'] = $result->getScore();
-					$resultSet->push(new ArrayData(($data)));
+					if($returnAsJSON){
+						$resultSet[] = $data;
+					}
+					else {
+						$resultSet[] = new ArrayData($data);
+					}
 				}
 			}
 		}
-
-		return $this->customise(array(
+		$outputdata = array(
 			'Search' => $query,
 			'Offset' => $from,
 			'TotalHits' => $results->getTotalHits(),
 			'Results' => $resultSet,
 			'ResultStart' => ($from + 1),
 			'ResultEnd' => min($from + 10, $results->getTotalHits()),
-			'Pagination' => $this->getPagination($results)
-		))->renderWith(array('ESSearchPage', 'Page'));
+			'SearchURL' => $baseURL,
+			'Filters' => $filters,
+			'Sort' => $sort
+		);
+		if($returnAsJSON){
+			$this->response->setBody(json_encode($outputdata));
+			return $this->response;
+		}
+		else {
+			$outputdata['ClassName'] = 'SearchPage';
+			$outputdata['Title'] = $siteConfig->ESSearchResultsTitle;
+			$outputdata['Introduction'] = $siteConfig->ESSearchResultsIntro;
+			$outputdata['Results'] = new ArrayList($resultSet);
+			$outputdata['Pagination'] = $this->getPagination($results);
+			$outputdata['SiteConfig'] = $siteConfig;
+		}
+		return $this->customise($outputdata)->renderWith(array('ESSearchPage', 'Page'));
+	}
+
+	private function getBaseURL($search = '') {
+		$currentURL = Director::makeRelative($_SERVER['REQUEST_URI']);
+		$parts = parse_url($currentURL);
+		$path = (isset($parts['path']) && $parts['path'] != '') ? $parts['path'] : '';
+		// Recompile URI segments
+		if($search && trim($search) != '') {
+			return $path . '?Search=' . urlencode($search);
+		}
+		return $path;
 	}
 
 	public function getPagination($results, $start = 0, $limit = 10) {
@@ -81,7 +160,7 @@ class ESSearchController extends Page_Controller {
 		);
 
 		$actions = new FieldList(
-			new FormAction('results', _t('SearchForm.GO', 'Go'))
+			new FormAction('results', _t('SearchForm.Search', 'Search'))
 		);
 
 		$form = new SearchForm($this->owner, 'SearchForm', $fields, $actions);

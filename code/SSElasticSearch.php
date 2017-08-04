@@ -194,44 +194,41 @@ class SSElasticSearch {
 	 * @return Elastica\ResultSet
 	 */
 	public function search($query, $filters = array(),
-						   $from = null, $limit = null,
+						   $from = 0, $limit = 10,
 						   $sort = array('_score' => 'desc')) {
-
-		$eQuery = new \Elastica\Query(new \Elastica\Query\QueryString($query));
-		//$eQuery->addScriptField()
-		$siteConfig = SiteConfig::current_site_config();
-
-		if (is_null($limit)) {
-			$limit = (int) $siteConfig->ESSearchResultsLimit;
-		}
-		$eQuery->setLimit($limit);
-		if (!is_null($from)) {
-			$eQuery->setFrom((int) $from);
-		}
-
-		$eQuery->setSort($sort);
-		$eQuery->setHighlight($this->getHighlightSetting());
-
-		//Boost score
-		$functionScoreQuery = new \Elastica\Query\FunctionScore();
-		$functionScoreQuery->setParam('query', $eQuery->getQuery());
-		$functionScoreQuery->addFunction('script_score', array(
-			//'script' => '_score * doc[\'ScoreBoost\'].value * ( doc[\'ClassName\'].value == \'Programme\'? 2 : 1)'
-			'script' => '_score * doc[\'ScoreBoost\'].value'
-		));
-		$eQuery->setQuery($functionScoreQuery);
 
 		try {
 			$index = $this->getElasticaIndex()->getName();
 			$path = $index . '/_search';
-			//Debug::dump($eQuery->toArray());
-			$response = $this->getElasticaClient()->request($path, Elastica\Request::GET, $eQuery->toArray());
-			$rset = new \Elastica\ResultSet($response, $eQuery);
+			$queryarray = array(
+				"query" => array(
+					"function_score" => array(
+						"query" => array (
+							"bool" => array(
+								"must" => array(
+									"query_string" => array("query" => $query)
+								),
+								"filter" => $filters
+							)
+						),
+						"script_score" => array(
+							"script" => "_score * doc['ScoreBoost'].value"
+						)
+					)
+				),
+				"from" => $from,
+				"size" => $limit,
+				"sort" => $sort,
+				"highlight" => $this->getHighlightSetting()
+			);
+			$response = $this->getElasticaClient()->request($path, Elastica\Request::GET, $queryarray);
+			$rset = new \Elastica\ResultSet($response, new \Elastica\Query($queryarray));
 			return $rset;
 		} catch (Exception $e) {
-			//Debug::dump($e->getMessage());
-			return Debug::log($e->getMessage());
+			Debug::log($e->getMessage());
+			return null;
 		}
+		return null;
 	}
 
 	public function optimizeIndex() {

@@ -20,6 +20,7 @@ class ESUpdateAllPagesIndexTask extends BuildTask {
 
 		$allPages = SiteTree::get("SiteTree", '"ClassName" NOT IN (\'' . implode("','", $DataObjectProperites) . '\')');
 		//$allPages = SiteTree::get("SiteTree", '"ClassName" IN( \'Programme\', \'Course\', \'SubjectPage\', \'HomePage\')');
+		//$allPages = SiteTree::get("SiteTree", '"ClassName" IN(\'Course\')');
 		echo "Number of page to index :: ".$allPages->count().".$delimiter";
 		foreach ($allPages as $index => $page) {
 			if (!in_array($page->ClassName, $DataObjectProperites)
