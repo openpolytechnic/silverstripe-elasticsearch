@@ -8,43 +8,40 @@ class ESPageType extends ESAbstractType {
 	public function getMappingProps() {
 		$props = array();
 		$props[self::$_ID_FIELD] = array(
-			'type' => 'integer',
-			'index' => 'not_analyzed'
+			'type' => 'integer'
 		);
 		$props['SS_ID'] = array(
-			'type' => 'integer',
-			'index' => 'not_analyzed'
+			'type' => 'integer'
 		);
 		$props['ClassName'] = array(
-			'type' => 'string',
-			'index' => 'not_analyzed'
+			'type' => 'keyword'
 		);
 		$props['Title'] = array(
-			'type' => 'string'
+			'type' => 'text'
 		);
 		$props['MenuTitle'] = array(
-			'type' => 'string'
+			'type' => 'text'
 		);
 		$props['Content'] = array(
 			'type' => 'text'
 		);
 		$props['Link'] = array(
-			'type' => 'string',
-			'index' => 'not_analyzed'
+			'type' => 'keyword'
 		);
 		$props['Created'] = array(
 			'type' => 'date',
-			'format' => 'YYYY-MM-dd HH:mm:ss',
-			'index' => 'not_analyzed'
+			'format' => 'YYYY-MM-dd HH:mm:ss'
 		);
 		$props['LastEdited'] = array(
 			'type' => 'date',
-			'format' => 'YYYY-MM-dd HH:mm:ss',
-			'index' => 'not_analyzed'
+			'format' => 'YYYY-MM-dd HH:mm:ss'
 		);
 		$props['ScoreBoost'] = array(
 			'type' => 'float',
-			'index' => 'not_analyzed'
+			'index' => 'false'
+		);
+		$props['BoostKeywords'] = array(
+			'type' => 'keyword'
 		);
 		$ExtraProperites = Config::inst()->get('ESSearchProperties', 'Default');
 		foreach ($ExtraProperites as $field => $def){
@@ -77,6 +74,14 @@ class ESPageType extends ESAbstractType {
 		if(method_exists($page, "updateScoreBoost")){
 			$data['ScoreBoost'] = $page->updateScoreBoost($data['ScoreBoost']);
 		}
+		if($page->ESSearchKeywords && trim($page->ESSearchKeywords) != ''){
+			$data['BoostKeywords'] = array_map("strtolower",
+										array_map("trim",
+													explode(',', $page->ESSearchKeywords)
+											)
+										);
+		}
+
 		$data['Content'] = self::cleanString($page->Content);
 		$ExtraProperites = Config::inst()->get('ESSearchProperties', 'Default');
 		foreach ($ExtraProperites as $field => $def){
@@ -137,6 +142,7 @@ class ESPageType extends ESAbstractType {
 				}
 			}
 		}
+		Debug::dump($data);
 		$this->_data = $data;
 	}
 
@@ -151,6 +157,7 @@ class ESPageType extends ESAbstractType {
 		} catch (Elastica\Exception\ClientException $e) {
 			return Debug::log($e->getMessage());
 		} catch (Exception $e) {
+			Debug::dump($e);
 			return Debug::log($e->getMessage());
 		}
 	}

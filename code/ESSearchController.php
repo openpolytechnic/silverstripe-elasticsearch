@@ -11,8 +11,9 @@ class ESSearchController extends Page_Controller {
 		//USE AJAX
 		$returnAsJSON = false;
 		if($this->getRequest()->getVar('ajax')) {
+			HTTP::set_cache_age(7200);
 			$this->response->addHeader("Content-type", "application/json");
-			$this->response->addHeader("Cache-Control", "max-age=172800, public");
+			$this->response->addHeader("Cache-Control", "max-age=7200, public"); //Cache only for 2 hours 60 * 60 * 2
 			$returnAsJSON = true;
 		}
 		$siteConfig = SiteConfig::current_site_config();

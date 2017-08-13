@@ -30,7 +30,6 @@ class ESUpdateAllPagesIndexTask extends BuildTask {
 			$client->deleteIndex();
 			echo "Index " . $siteConfig->ESIndexName . " deleted.$delimiter";
 		}
-
 		$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
 		echo "Starting Re-Index.$delimiter";
 		if(isset($_GET['onlyfor']) && trim($_GET['onlyfor']) != ''){

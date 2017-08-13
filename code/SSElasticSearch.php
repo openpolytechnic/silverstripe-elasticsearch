@@ -76,7 +76,7 @@ class SSElasticSearch {
 	}
 
 	public function getElasticaIndex() {
-		$siteConfig = SiteConfig::current_site_config();
+		/*$siteConfig = SiteConfig::current_site_config();
 		$indexName = $siteConfig->ESIndexName;
 		if (!$indexName) {
 			Debug::log('User error: Index name not set');
@@ -86,6 +86,8 @@ class SSElasticSearch {
 		if($domain){
 			$indexName = str_replace('.', '_', $domain).'_'.$indexName;
 		}
+		*/
+		$indexName = self::indexName();
 		$this->eIndex = $this->getElasticaClient()->getIndex($indexName);
 		// Check index exists, else create it and set default settings
 		try {
@@ -196,7 +198,6 @@ class SSElasticSearch {
 	public function search($query, $filters = array(),
 						   $from = 0, $limit = 10,
 						   $sort = array('_score' => 'desc')) {
-
 		try {
 			$index = $this->getElasticaIndex()->getName();
 			$path = $index . '/_search';
@@ -208,7 +209,15 @@ class SSElasticSearch {
 								"must" => array(
 									"query_string" => array("query" => $query)
 								),
-								"filter" => $filters
+								"filter" => $filters,
+								"should" => array(
+									"term" => array(
+										"BoostKeywords" => array(
+											"value" => strtolower(trim($query)),
+											"boost" => 100
+										)
+									)
+								)
 							)
 						),
 						"script_score" => array(
@@ -225,6 +234,7 @@ class SSElasticSearch {
 			$rset = new \Elastica\ResultSet($response, new \Elastica\Query($queryarray));
 			return $rset;
 		} catch (Exception $e) {
+			Debug::dump($e);
 			Debug::log($e->getMessage());
 			return null;
 		}
@@ -241,70 +251,6 @@ class SSElasticSearch {
 		}
 	}
 
-	/**
-	 * Processes any custom settings set in the admin backend. If you prefix any key
-	 * with a '-' it will unset it (useful for removing default settings 
-	 * like in $_defaultAnalysis) or if you define the same key it will override it
-	 * 
-	 *  
-	 * e.g. if your custom settings contained:
-	 * 
-	 * {
-	 * 	 "analyzer" : {
-	 *	 "ngram" : {
-	 *	   "filter" : ["customFilter", "stop", "standard"]
-	 *	 }
-	 *   },
-	 *   "tokenizer" : {
-	 *	 "-left_tokenizer"
-	 *   },
-	 *   "newSetting" : {...}
-	 * }
-	 * 
-	 * "ngram"'s setting "filter" inside $_defaultAnalysis would get overriden
-	 * leaving all its other settings intact
-	 * 
-	 * The setting "left_tokenizer" inside $_defaultAnalysis would be completely 
-	 * unset leaving the rest of the settings inside "tokenizer" intact
-	 * 
-	 * "newSettings" would be added including any subsettings
-	 * 
-	 */
-	/*
-	protected function _processCustomSettings() {
-
-		$siteConfig = SiteConfig::current_site_config();
-		$customSettings = $siteConfig->ESIndexCustomSettings;
-		if ($customSettings) {
-			$customSettings = json_decode($customSettings, TRUE);
-			foreach ($customSettings as $name => $options) {
-				// Remove field if name is pre-fixed with '-'
-				if ($string = $this->_stringCheckForUnset($name)) {
-					unset($this->_settings[$string]);
-					continue;
-				}
-				// Prevent default analysis from getting nuked if user wants to add custom options in analysis
-				if ($name == 'analysis') {
-					foreach ($options as $optName => $optSettings) {
-						if ($string = $this->_stringCheckForUnset($optName)) {
-							unset($this->_settings[$name][$string]);
-							continue;
-						}
-						foreach ($optSettings as $subName => $subOptions) {
-							if ($string = $this->_stringCheckForUnset($subName)) {
-								unset($this->_settings[$name][$optName][$string]);
-								continue;
-							}
-							$this->_settings[$name][$optName][$subName] = $subOptions;
-						}
-					}
-				} else {
-					$this->_settings[$name] = $options;
-				}
-			}
-		}
-	}
-	*/
 
 	/**
 	 * Takes a string and determines if it is prefixed with a '-'
@@ -370,5 +316,29 @@ class SSElasticSearch {
 			}
 		}
 		return $highlightSetting;
+	}
+
+	public static function indexName() {
+		$siteConfig = SiteConfig::current_site_config();
+		$indexName = $siteConfig->ESIndexName;
+		if (!$indexName) {
+			Debug::log('User error: Index name not set');
+			return user_error('User error: Index name not set', E_USER_ERROR);
+		}
+		$domain = parse_url(@Director::absoluteURL(), PHP_URL_HOST);
+		if($domain){
+			$indexName = str_replace('.', '_', $domain).'_'.$indexName;
+		}
+		return $indexName;
+	}
+
+	public static function indexLink($ID) {
+		$siteConfig = SiteConfig::current_site_config();
+		$indexName = self::indexName();
+		if($indexName) {
+			return Controller::join_links($siteConfig->ESAPIEndPoint, $indexName, 'sspage', $ID).'?pretty';
+
+		}
+		return '';
 	}
 }

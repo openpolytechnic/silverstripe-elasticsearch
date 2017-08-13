@@ -28,6 +28,17 @@ abstract class ESAbstractType {
 
 			$this->_eType = $this->_eIndex->getType($this->_type);
 			if (!$this->indexTypeExists()) {
+				/*$this->_eIndex->setSettings(array(
+					"analysis" => array(
+						"normalizer" => array(
+							"lowercase_normalizer" => array(
+								"type" => "custom",
+								"char_filter" =>  array(),
+								"filter" => array("lowercase")
+							)
+						)
+					)
+				));*/
 				$this->_eMap = new \Elastica\Type\Mapping($this->getType());
 				$this->_eMap->setProperties($this->getMappingProps());
 				$this->_eMap->send();
