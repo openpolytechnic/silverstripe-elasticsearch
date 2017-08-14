@@ -2,21 +2,31 @@
 
 class ESSearchController extends Page_Controller {
 
-	function init() {
-		parent::init();
-	}
 
-	function index() {
+	public function index() {
 
+		$siteConfig = SiteConfig::current_site_config();
 		//USE AJAX
 		$returnAsJSON = false;
 		if($this->getRequest()->getVar('ajax')) {
-			HTTP::set_cache_age(7200);
 			$this->response->addHeader("Content-type", "application/json");
-			$this->response->addHeader("Cache-Control", "max-age=7200, public"); //Cache only for 2 hours 60 * 60 * 2
+			if(isset($siteConfig->ESSearchUseAjaxCache) && $siteConfig->ESSearchUseAjaxCache ) {
+				$cache = SS_Cache::factory('esserachresult');
+				$cachekey = md5(implode('_',
+						array(
+							serialize($this->getRequest()->getVars()),
+							SiteTree::get()->max('LastEdited')
+						)
+					)
+				);
+				if ($cacheContent = unserialize($cache->load($cachekey))) {
+					$this->response->setBody($cacheContent);
+					return $this->response;
+				}
+			}
 			$returnAsJSON = true;
 		}
-		$siteConfig = SiteConfig::current_site_config();
+
 		if($this->getRequest()->getVar('Search')){
 			$query = trim($this->getRequest()->getVar('Search'));
 		}
@@ -116,7 +126,11 @@ class ESSearchController extends Page_Controller {
 			'Sort' => $sort
 		);
 		if($returnAsJSON){
-			$this->response->setBody(json_encode($outputdata));
+			$output = json_encode($outputdata);
+			if(isset($cache)){
+				$cache->save(serialize($output));
+			}
+			$this->response->setBody($output);
 			return $this->response;
 		}
 		else {

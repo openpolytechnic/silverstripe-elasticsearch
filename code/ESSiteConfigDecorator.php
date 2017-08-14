@@ -9,6 +9,7 @@ class ESSiteConfigDecorator extends DataExtension {
 		'ESPort' => 'Varchar',
 		'ESTransport' => 'Varchar',
 		'ESSearchUseAjax' => 'Boolean',
+		'ESSearchUseAjaxCache' => 'Boolean',
 		'ESSearchResultsLimit' => 'Int(10)',
 		'ESSearchResultsTitle' => 'Varchar(255)',
 		'ESSearchResultsIntro' => 'HTMLText',
@@ -26,6 +27,7 @@ class ESSiteConfigDecorator extends DataExtension {
 		$fields->addFieldsToTab('Root.ElasticSearch', array(
 			new HeaderField("ESSearchResultHeader", "Search Result"),
 			new CheckboxField('ESSearchUseAjax', 'Search To Use Ajax'),
+			new CheckboxField('ESSearchUseAjaxCache', 'Search To Use Ajax Cache'),
 			new TextField('ESSearchResultsTitle', 'Search Results Title'),
 			$ESSearchResultsIntro = new HtmlEditorField('ESSearchResultsIntro', 'Search Results Introduction'),
 			$ESSearchResultsNoResults = new HtmlEditorField('ESSearchResultsNoResults', 'Search No Results'),

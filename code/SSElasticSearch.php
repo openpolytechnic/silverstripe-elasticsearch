@@ -211,10 +211,20 @@ class SSElasticSearch {
 								),
 								"filter" => $filters,
 								"should" => array(
-									"term" => array(
-										"BoostKeywords" => array(
-											"value" => strtolower(trim($query)),
-											"boost" => 100
+									array(
+										"term" => array(
+											"BoostKeywords" => array(
+												"value" => strtolower(trim($query)),
+												"boost" => 100
+											)
+										)
+									),
+									array(
+										'match' => array(
+											'Title' => array(
+												'query' => $query,
+												'boost' => 1.5
+											)
 										)
 									)
 								)
