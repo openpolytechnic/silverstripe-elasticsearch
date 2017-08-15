@@ -2,6 +2,8 @@
 
 class ESSiteTreeDecorator extends DataExtension {
 
+	public static $SkipSearchIndexUpdate = false;
+
 	private static $db = array(
 		'ESIndexThis' => 'Boolean',
 		'ESScoreBoost' => 'Int',
@@ -82,23 +84,27 @@ ESJS
 		$keywordField->setRightTitle("Use comma(,) as delimiter to enter multiple keywords.");
 	}
 
-	function onAfterPublish(&$original) {
-		$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
-		if (!in_array($this->owner->ClassName, $DataObjectProperites)
-			&& $this->owner->ESIndexThis
-			&& $this->owner->canView()) {
-			$pageType = new ESPageType();
-			$pageType->prepareData($this->owner);
-			$pageType->indexData();
-		} else {
-			$pageType = new ESPageType();
-			$pageType->deleteByID($this->owner->ID);
+	public function onAfterPublish(&$original) {
+		if(!self::$SkipSearchIndexUpdate) {
+			$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
+			if (!in_array($this->owner->ClassName, $DataObjectProperites)
+				&& $this->owner->ESIndexThis
+				&& $this->owner->canView()) {
+				$pageType = new ESPageType();
+				$pageType->prepareData($this->owner);
+				$pageType->indexData();
+			} else {
+				$pageType = new ESPageType();
+				$pageType->deleteByID($this->owner->ID);
+			}
 		}
 	}
 
-	function onAfterUnpublish() {
-		$pageType = new ESPageType();
-		$pageType->deleteByID($this->owner->ID);
+	public function onAfterUnpublish() {
+		if(!self::$SkipSearchIndexUpdate) {
+			$pageType = new ESPageType();
+			$pageType->deleteByID($this->owner->ID);
+		}
 	}
 
 }

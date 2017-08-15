@@ -16,7 +16,7 @@ class ESUpdateAllPagesIndexTask extends BuildTask {
 		if (Director::is_cli()) {
 			$delimiter = "\n";
 		}
-		if(isset($_GET['full']) && trim($_GET['full']) != ''){
+		if(isset($_GET['reindex']) && trim($_GET['reindex']) != ''){
 			$this->dodelete = true;
 		}
 
@@ -24,6 +24,7 @@ class ESUpdateAllPagesIndexTask extends BuildTask {
 			$this->deleteIndex = true;
 		}
 
+		Versioned::set_reading_mode(Versioned::get_live_stage());
 		$siteConfig = SiteConfig::current_site_config();
 		if($this->deleteIndex){
 			$client = new SSElasticSearch();
