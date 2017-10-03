@@ -193,7 +193,12 @@ class ESSearchController extends Page_Controller {
 		);
 
 		$form = new SearchForm($this->owner, 'SearchForm', $fields, $actions);
-		$form->setFormAction('site/search');
+		if(Config::inst()->get('ESSearchSetting', 'SearchURL')){
+			$form->setFormAction(Config::inst()->get('ESSearchSetting', 'SearchURL'));
+		}
+		else {
+			$form->setFormAction('site/search');
+		}
 
 		return $form;
 	}
