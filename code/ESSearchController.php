@@ -44,7 +44,7 @@ class ESSearchController extends Page_Controller {
 		$filters = array();
 		$sort = array('_score' => 'desc');
 		$from = 0;
-		$limit = 10;
+		$limit = isset(SiteConfig::current_site_config()->ESSearchResultsTitle) ? (int)SiteConfig::current_site_config()->ESSearchResultsTitle : 10;
 		if($siteConfig->ESSearchResultsLimit) {
 			$limit = $siteConfig->ESSearchResultsLimit;
 		}
