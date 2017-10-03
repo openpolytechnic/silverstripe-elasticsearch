@@ -20,6 +20,10 @@ class SSElasticSearch {
 				"type" => "custom",
 				"tokenizer" => "n_tokenizer",
 				"filter" => array("standard", "lowercase", "stop")
+			),
+			"partialanalyzer" => array(
+				"type" => "snowball",
+				"language" => "English"
 			)
 		),
 		"tokenizer" => array(
@@ -207,7 +211,7 @@ class SSElasticSearch {
 						"query" => array (
 							"bool" => array(
 								"must" => array(
-									"query_string" => array("query" => $query)
+									"query_string" => array("query" => $query."*")
 								),
 								"filter" => $filters,
 								"should" => array(

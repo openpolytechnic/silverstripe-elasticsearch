@@ -31,8 +31,8 @@ class ESSiteConfigDecorator extends DataExtension {
 			new TextField('ESSearchResultsTitle', 'Search Results Title'),
 			$ESSearchResultsIntro = new HtmlEditorField('ESSearchResultsIntro', 'Search Results Introduction'),
 			$ESSearchResultsNoResults = new HtmlEditorField('ESSearchResultsNoResults', 'Search No Results'),
-			$ESSearchResultsNotWorking = new HtmlEditorField('ESSearchResultsNotWorking', 'Search Not Working'),
 			$ESSearchResultsNoText = new HtmlEditorField('ESSearchResultsNoText', 'Search No Text'),
+			$ESSearchResultsNotWorking = new HtmlEditorField('ESSearchResultsNotWorking', 'Search Not Working'),
 			new TextField('ESSearchResultsLimit', 'Search results limit per page'),
 			new HeaderField("ESSearchElastic", "Elastic Search Server"),
 			new TextField('ESIndexName', 'Index Name'),
@@ -41,6 +41,7 @@ class ESSiteConfigDecorator extends DataExtension {
 			new TextField('ESHost', 'Host (optional - default: localhost)'),
 			new TextField('ESPort', 'Port (optional - default: 9200)'),
 			new TextField('ESTransport', 'Transport (optional)'),
+			/*
 			new LiteralField('info', '<hr /><p>
 				<a href="dev/tasks/ESEnableIndexingForAllPagesTask" target="new">Enable indexing for all pages</a>
 				<br>
@@ -48,7 +49,7 @@ class ESSiteConfigDecorator extends DataExtension {
 				<br>
 				<br>			  
 				<a href="dev/tasks/ESDeleteIndexTask" target="new">Delete index (careful!)</a>
-				</p>')
+				</p>')*/
 
 		));
 		$ESSearchResultsIntro->setRows(10);

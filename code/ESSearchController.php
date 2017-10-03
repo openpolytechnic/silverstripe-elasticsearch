@@ -70,7 +70,7 @@ class ESSearchController extends Page_Controller {
 				'Title' => $siteConfig->ESSearchResultsTitle,
 				'SearchURL' => $this->getBaseURL(''),
 				'UseAjax' => true,
-				'Search' => $query,
+				'Search' => trim($query),
 				'Offset' => $from,
 				'Filters' => $filters,
 				'Sort' => $sort
@@ -80,6 +80,18 @@ class ESSearchController extends Page_Controller {
 		$client = new SSElasticSearch();
 		$resultSet = array();
 		$results = $client->search($query, $filters, $from, $limit, $sort);
+		$SearchOffline = false;
+
+		if($results->getResponse()){
+			$data = $results->getResponse()->getData();
+			if(isset($data['status']) && strtolower(trim($data['status'])) == 'error'){
+				$SearchOffline = true;
+			}
+		}
+		else {
+			$SearchOffline = true;
+		}
+
 		if ($results) {
 			if ($results->count() > 0) {
 				foreach ($results->getResults() as $result) {
@@ -115,7 +127,7 @@ class ESSearchController extends Page_Controller {
 			}
 		}
 		$outputdata = array(
-			'Search' => $query,
+			'Search' => trim($query),
 			'Offset' => $from,
 			'TotalHits' => $results->getTotalHits(),
 			'Results' => $resultSet,
@@ -123,8 +135,10 @@ class ESSearchController extends Page_Controller {
 			'ResultEnd' => min($from + 10, $results->getTotalHits()),
 			'SearchURL' => $baseURL,
 			'Filters' => $filters,
-			'Sort' => $sort
+			'Sort' => $sort,
+			'Offline' => $SearchOffline
 		);
+
 		if($returnAsJSON){
 			$output = json_encode($outputdata);
 			if(isset($cache)){
@@ -276,4 +290,25 @@ class ESSearchController extends Page_Controller {
 		}
 		return $truncate;
 	}
+
+	public function getIntroText() {
+		return SiteConfig::current_site_config()->ESSearchResultsIntro;
+	}
+
+	public function getNoResultsText() {
+		return SiteConfig::current_site_config()->ESSearchResultsNoResults;
+	}
+
+	public function getNoSearchKeywordText() {
+		return SiteConfig::current_site_config()->ESSearchResultsNoText;
+	}
+
+	public function getSearchOfflineText() {
+		return SiteConfig::current_site_config()->ESSearchResultsNotWorking;
+	}
+
+	public function getTitle() {
+		return SiteConfig::current_site_config()->ESSearchResultsTitle;
+	}
+
 }

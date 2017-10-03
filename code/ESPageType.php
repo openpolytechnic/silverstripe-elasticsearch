@@ -17,13 +17,16 @@ class ESPageType extends ESAbstractType {
 			'type' => 'keyword'
 		);
 		$props['Title'] = array(
-			'type' => 'text'
+			'type' => 'text',
+			"analyzer" => "partialanalyzer"
 		);
 		$props['MenuTitle'] = array(
-			'type' => 'text'
+			'type' => 'text',
+			"analyzer" => "partialanalyzer"
 		);
 		$props['Content'] = array(
-			'type' => 'text'
+			'type' => 'text',
+			"analyzer" => "partialanalyzer"
 		);
 		$props['Link'] = array(
 			'type' => 'keyword'
@@ -142,7 +145,6 @@ class ESPageType extends ESAbstractType {
 				}
 			}
 		}
-		Debug::dump($data);
 		$this->_data = $data;
 	}
 
@@ -157,7 +159,6 @@ class ESPageType extends ESAbstractType {
 		} catch (Elastica\Exception\ClientException $e) {
 			return Debug::log($e->getMessage());
 		} catch (Exception $e) {
-			Debug::dump($e);
 			return Debug::log($e->getMessage());
 		}
 	}
