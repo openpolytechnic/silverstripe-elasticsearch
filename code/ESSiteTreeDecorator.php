@@ -23,13 +23,14 @@ class ESSiteTreeDecorator extends DataExtension {
     	var checkEnableESSetting = function() {
     		if($('input[name=ESIndexThis]').is(':checked')) {
     			$('#ESScoreBoost select, #ESSearchKeywords input').removeAttr('disabled');
-    			$('#ESScoreBoost #Form_ItemEditForm_ESScoreBoost_chzn, #ESIndexLinkButton').show();
+    			$('#ESScoreBoost #Form_EditForm_ESScoreBoost_chzn, #ESIndexLinkButton').show();
+    			$('#ESScoreBoost #Form_EditForm_ESScoreBoost_chzn').removeClass('chzn-disabled');
     			$('#ESIndexLinkButton').removeClass('ui-state-disabled');
 				$('#ESScoreBoost .middleColumn .readonly-field').remove();
     		}
     		else {
     			$('#ESScoreBoost select, #ESSearchKeywords input').attr('disabled', 'disabled');
-    			$('#ESScoreBoost #Form_ItemEditForm_ESScoreBoost_chzn').hide();
+    			$('#ESScoreBoost #Form_EditForm_ESScoreBoost_chzn').hide();
     			$('#ESScoreBoost .middleColumn .readonly-field').remove();
     			$('#ESIndexLinkButton').addClass('ui-state-disabled');
 				$('#ESScoreBoost .middleColumn').append("<span class='readonly-field'>"+$('#ESScoreBoost select option:selected').text()+"</span>");    			
@@ -44,7 +45,6 @@ class ESSiteTreeDecorator extends DataExtension {
         	checkEnableESSetting();
         });
         $('.cms-container').on('click', '#ESIndexLinkButton', function(event) {
-        	console.log("In here");
         	event.preventDefault();
         	if(!$(this).is('.ui-state-disabled')) {
         		window.open($(this).attr('href'), 'Searchly Index','status=no,height=500,width=600');
@@ -73,7 +73,7 @@ ESJS
 				$keywordField = new TextField('ESSearchKeywords', 'Search Keyword push this page to top of result'),
 				new LiteralField("ESIndexLink", "<div class='field'><a id='ESIndexLinkButton' href='".SSElasticSearch::indexLink($this->owner->ID)."' class='ss-ui-button' target='_blank'>Raw Index</a></div>")
 			)));
-
+			$keywordField->setRightTitle("Use comma(,) as delimiter to enter multiple keywords.");
 		}
 		else {
 			$fields->addFieldsToTab('Root.Main', array(
@@ -81,7 +81,6 @@ ESJS
 				new HiddenField('ESScoreBoost', 'ESScoreBoost', 0)
 			));
 		}
-		$keywordField->setRightTitle("Use comma(,) as delimiter to enter multiple keywords.");
 	}
 
 	public function onAfterPublish(&$original) {
