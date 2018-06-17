@@ -27,8 +27,9 @@ class ESSearchController extends Page_Controller {
 			$returnAsJSON = true;
 		}
 
-		if($this->getRequest()->getVar('Search')){
-			$query = trim($this->getRequest()->getVar('Search'));
+		if($this->getRequest()->getVar('Search')
+            && trim(strip_tags($this->getRequest()->getVar('Search'))) != ''){
+			$query = trim(strip_tags($this->getRequest()->getVar('Search')));
 		}
 		else {
 			return $this->customise(array(
@@ -181,7 +182,7 @@ class ESSearchController extends Page_Controller {
 		$searchText = "Enter a word or phrase";
 
 		if ($this->owner->request) {
-			$searchText = $this->owner->request->getVar('Search');
+			$searchText = trim(strip_tags($this->owner->request->getVar('Search')));
 		}
 
 		$fields = new FieldList(

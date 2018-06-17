@@ -106,4 +106,18 @@ ESJS
 		}
 	}
 
+	public static function updateSearchIndex($obj) {
+        $DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
+        if (!in_array($obj->ClassName, $DataObjectProperites)
+            && $obj->ESIndexThis
+            && $obj->canView()) {
+            $pageType = new ESPageType();
+            $pageType->prepareData($obj);
+            $pageType->indexData();
+        } else {
+            $pageType = new ESPageType();
+            $pageType->deleteByID($obj->ID);
+        }
+    }
+
 }
