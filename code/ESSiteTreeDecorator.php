@@ -6,7 +6,7 @@ class ESSiteTreeDecorator extends DataExtension {
 
 	private static $db = array(
 		'ESIndexThis' => 'Boolean',
-		'ESScoreBoost' => 'Int',
+		'ESScoreBoost' => 'Float',
 		'ESSearchKeywords' => 'Varchar(255)'
 	);
 
