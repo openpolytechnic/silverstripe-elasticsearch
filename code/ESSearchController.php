@@ -1,10 +1,23 @@
 <?php
 
-class ESSearchController extends Page_Controller {
+class ESSearchController extends Controller {
 
+    private $page_controller;
 
-	public function index() {
+    public function __construct() {
+        parent::__construct();
+        $dataRecord = Page::get_by_id("Page", 1);
+        $this->page_controller = new Page_Controller($dataRecord);
+    }
 
+    public function init()
+    {
+        parent::init();
+        $this->page_controller->setRequest($this->request);
+        $this->page_controller->init();
+    }
+
+    public function index() {
 		$siteConfig = SiteConfig::current_site_config();
 		//USE AJAX
 		$returnAsJSON = false;
@@ -32,7 +45,7 @@ class ESSearchController extends Page_Controller {
 			$query = trim(strip_tags($this->getRequest()->getVar('Search')));
 		}
 		else {
-			return $this->customise(array(
+			return $this->page_controller->customise(array(
 				'SiteConfig' => $siteConfig,
 				'ClassName' => 'SearchPage',
 				'Title' => $siteConfig->ESSearchResultsTitle,
@@ -65,7 +78,7 @@ class ESSearchController extends Page_Controller {
 		$baseURL = $this->getBaseURL($query);
 
 		if(!$returnAsJSON && $siteConfig->ESSearchUseAjax){
-			return $this->customise(array(
+			return $this->page_controller->customise(array(
 				'SiteConfig' => $siteConfig,
 				'ClassName' => 'SearchPage',
 				'Title' => $siteConfig->ESSearchResultsTitle,
@@ -156,7 +169,7 @@ class ESSearchController extends Page_Controller {
 			$outputdata['Pagination'] = $this->getPagination($results);
 			$outputdata['SiteConfig'] = $siteConfig;
 		}
-		return $this->customise($outputdata)->renderWith(array('ESSearchPage', 'Page'));
+		return $this->page_controller->customise($outputdata)->renderWith(array('ESSearchPage', 'Page'));
 	}
 
 	private function getBaseURL($search = '') {
