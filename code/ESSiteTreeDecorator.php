@@ -84,7 +84,7 @@ ESJS
 	}
 
 	public function onAfterPublish(&$original) {
-		if(!self::$SkipSearchIndexUpdate) {
+		if(!self::$SkipSearchIndexUpdate && !defined('SKIP_ES_SEARCH_INDEX')) {
 			$DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
 			if (!in_array($this->owner->ClassName, $DataObjectProperites)
 				&& $this->owner->ESIndexThis
@@ -100,23 +100,25 @@ ESJS
 	}
 
 	public function onAfterUnpublish() {
-		if(!self::$SkipSearchIndexUpdate) {
+		if(!self::$SkipSearchIndexUpdate && !defined('SKIP_ES_SEARCH_INDEX')) {
 			$pageType = new ESPageType();
 			$pageType->deleteByID($this->owner->ID);
 		}
 	}
 
 	public static function updateSearchIndex($obj) {
-        $DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
-        if (!in_array($obj->ClassName, $DataObjectProperites)
-            && $obj->ESIndexThis
-            && $obj->canView()) {
-            $pageType = new ESPageType();
-            $pageType->prepareData($obj);
-            $pageType->indexData();
-        } else {
-            $pageType = new ESPageType();
-            $pageType->deleteByID($obj->ID);
+	    if(!defined('SKIP_ES_SEARCH_INDEX')) {
+            $DataObjectProperites = Config::inst()->get('ESSearchSetting', 'ExcludeDataObject');
+            if (!in_array($obj->ClassName, $DataObjectProperites)
+                && $obj->ESIndexThis
+                && $obj->canView()) {
+                $pageType = new ESPageType();
+                $pageType->prepareData($obj);
+                $pageType->indexData();
+            } else {
+                $pageType = new ESPageType();
+                $pageType->deleteByID($obj->ID);
+            }
         }
     }
 
