@@ -6,7 +6,7 @@ class ESSearchController extends Controller {
 
     public function __construct() {
         parent::__construct();
-        $dataRecord = Page::get_by_id("Page", 1);
+        $dataRecord = new Page();
         $this->page_controller = new Page_Controller($dataRecord);
     }
 
