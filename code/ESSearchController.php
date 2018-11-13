@@ -7,6 +7,10 @@ class ESSearchController extends Controller {
     public function __construct() {
         parent::__construct();
         $dataRecord = new Page();
+		$dataRecord->IntroText = $this->getIntroText();
+		$dataRecord->NoResultsText = $this->getNoResultsText();
+		$dataRecord->NoSearchKeywordText = $this->getNoSearchKeywordText();
+		$dataRecord->SearchOfflineText = $this->getSearchOfflineText();
         $this->page_controller = new Page_Controller($dataRecord);
     }
 
