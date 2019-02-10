@@ -56,7 +56,8 @@ class ESSearchController extends Controller {
 				'Search' => false,
 				'Offset' => 0,
 				'TotalHits' => 0,
-				'Results' => null
+				'Results' => null,
+				'UseAjax' => $siteConfig->ESSearchUseAjax
 			))->renderWith(array('ESSearchPage', 'Page'));
 		}
 		$filters = array();
@@ -154,7 +155,8 @@ class ESSearchController extends Controller {
 			'SearchURL' => $baseURL,
 			'Filters' => $filters,
 			'Sort' => $sort,
-			'Offline' => $SearchOffline
+			'Offline' => $SearchOffline,
+			'UseAjax' => $siteConfig->ESSearchUseAjax
 		);
 
 		if($returnAsJSON){
