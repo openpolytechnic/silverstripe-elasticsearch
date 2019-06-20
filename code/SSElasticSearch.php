@@ -248,8 +248,6 @@ class SSElasticSearch {
 			$rset = new \Elastica\ResultSet($response, new \Elastica\Query($queryarray));
 			return $rset;
 		} catch (Exception $e) {
-			Debug::dump($e);
-			Debug::log($e->getMessage());
 			return null;
 		}
 		return null;
@@ -261,7 +259,7 @@ class SSElasticSearch {
 			$path = $index . '/_optimize';
 			$response = $this->getElasticaClient()->request($path, Elastica\Request::POST);
 		} catch (Exception $e) {
-			return Debug::log($e->getMessage());
+			return null;
 		}
 	}
 
