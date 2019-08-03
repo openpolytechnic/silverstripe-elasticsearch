@@ -337,7 +337,7 @@ class SSElasticSearch {
 			Debug::log('User error: Index name not set');
 			return user_error('User error: Index name not set', E_USER_ERROR);
 		}
-		$domain = parse_url(@Director::absoluteURL(), PHP_URL_HOST);
+		$domain = parse_url(@Director::absoluteURL(''), PHP_URL_HOST);
 		if($domain){
 			$indexName = str_replace('.', '_', $domain).'_'.$indexName;
 		}
