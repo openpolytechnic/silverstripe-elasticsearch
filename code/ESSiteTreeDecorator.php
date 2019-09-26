@@ -18,7 +18,7 @@ class ESSiteTreeDecorator extends DataExtension {
 
 	public function updateCMSFields(FieldList $fields) {
 		Requirements::customScript(<<<ESJS
-(function($) {
+(typeof window.jQuery != "undefined") && (function($) {
     $.entwine('ss', function($) {
     	var checkEnableESSetting = function() {
     		if($('input[name=ESIndexThis]').is(':checked')) {
@@ -53,7 +53,7 @@ class ESSiteTreeDecorator extends DataExtension {
         });
         
     });
-}(jQuery));
+}(window.jQuery));
 ESJS
 		);
 
