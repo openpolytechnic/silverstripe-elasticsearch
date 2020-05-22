@@ -80,17 +80,6 @@ class SSElasticSearch {
 	}
 
 	public function getElasticaIndex() {
-		/*$siteConfig = SiteConfig::current_site_config();
-		$indexName = $siteConfig->ESIndexName;
-		if (!$indexName) {
-			Debug::log('User error: Index name not set');
-			return user_error('User error: Index name not set', E_USER_ERROR);
-		}
-		$domain = parse_url(@Director::absoluteURL(), PHP_URL_HOST);
-		if($domain){
-			$indexName = str_replace('.', '_', $domain).'_'.$indexName;
-		}
-		*/
 		$indexName = self::indexName();
 		$this->eIndex = $this->getElasticaClient()->getIndex($indexName);
 		// Check index exists, else create it and set default settings
@@ -245,8 +234,9 @@ class SSElasticSearch {
 				"highlight" => $this->getHighlightSetting()
 			);
 			$response = $this->getElasticaClient()->request($path, Elastica\Request::GET, $queryarray);
-			$rset = new \Elastica\ResultSet($response, new \Elastica\Query($queryarray));
-			return $rset;
+			$builder = new \Elastica\ResultSet\DefaultBuilder();
+			$resultSet = $builder->buildResultSet($response, new \Elastica\Query($queryarray));
+			return $resultSet;
 		} catch (Exception $e) {
 			return null;
 		}
@@ -337,7 +327,7 @@ class SSElasticSearch {
 			Debug::log('User error: Index name not set');
 			return user_error('User error: Index name not set', E_USER_ERROR);
 		}
-		$domain = parse_url(@Director::absoluteURL(), PHP_URL_HOST);
+		$domain = parse_url(@Director::absoluteURL(''), PHP_URL_HOST);
 		if($domain){
 			$indexName = str_replace('.', '_', $domain).'_'.$indexName;
 		}

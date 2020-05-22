@@ -12,6 +12,10 @@ class ESUpdateAllPagesIndexTask extends BuildTask {
 			echo 'You need to be admin for this or run it from command line.';
 			return;
 		}
+		//Remove all the PHP limits
+		ini_set('memory_limit', '-1');
+		set_time_limit(0);
+
 		$delimiter = "<br />";
 		if (Director::is_cli()) {
 			$delimiter = "\n";

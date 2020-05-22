@@ -135,6 +135,9 @@ class ESSearchController extends Controller {
 					if(strlen($data['Content']) > 300) {
 						$data['Content'] = self::truncate($data['Content'], 300);
 					}
+					if (isset($data['Link'])) {
+						$data['Link'] = self::remove_stage_from_link($data['Link']);
+					}
 					$data['Score'] = $result->getScore();
 					if($returnAsJSON){
 						$resultSet[] = $data;
@@ -336,4 +339,16 @@ class ESSearchController extends Controller {
 		return SiteConfig::current_site_config()->ESSearchResultsTitle;
 	}
 
+	public static function remove_stage_from_link($link) {
+		$query = parse_url($link, PHP_URL_QUERY);
+		if (isset($query) && trim($query) != '' && preg_match('/stage=/i', $query)) {
+			$stripQuery = trim(
+				preg_replace('/(|&)stage=[^&]*/i', '$1', $query),
+				'&');
+			$link = rtrim(
+				str_replace($query, $stripQuery, $link),
+				'?');
+		}
+		return $link;
+	}
 }
