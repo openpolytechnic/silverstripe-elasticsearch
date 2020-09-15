@@ -101,7 +101,7 @@ class ESSearchController extends Controller {
 		$results = $client->search($query, $filters, $from, $limit, $sort);
 		$SearchOffline = false;
 
-		if($results->getResponse()){
+		if(isset($results) && $results->getResponse()){
 			$data = $results->getResponse()->getData();
 			if(isset($data['status']) && strtolower(trim($data['status'])) == 'error'){
 				$SearchOffline = true;
