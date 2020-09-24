@@ -44,7 +44,7 @@ class ESResultsController extends Page_Controller {
 					$resultSet->push(new ArrayData(($data)));
 				}
 				return new ArrayData(array(
-					'TotalHits' => $results->getTotalHits(),
+					'TotalHits' => isset($results) ? $results->getTotalHits() : 0,
 					'Results' => $resultSet
 				));
 			}
